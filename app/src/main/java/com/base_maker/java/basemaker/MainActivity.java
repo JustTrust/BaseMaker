@@ -14,6 +14,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mEditText = (TextView) findViewById(R.id.main_edit_text);
-        mEditText.setText(DBfile.Profile.CREATE);
+        mEditText.setText(DB.Profile.CREATE);
     }
 }
