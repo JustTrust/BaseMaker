@@ -18,7 +18,6 @@ import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -141,8 +140,7 @@ public class DbProcessor extends AbstractProcessor {
         }
 
         TypeSpec.Builder mainClassBuilder = TypeSpec.classBuilder("DBfile")
-                .addModifiers(Modifier.PUBLIC)
-                .addField(TypeName.BOOLEAN, "mBool", Modifier.PUBLIC);
+                .addModifiers(Modifier.PUBLIC);
 
         for (Map.Entry<String, MakeDbAnnotatedClass> classEntry : classList.entrySet()) {
             TypeElement annotatedClass = classEntry.getValue().getTypeElement();
@@ -172,14 +170,22 @@ public class DbProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC)
                 .addField(tableNameField);
 
-        StringBuilder tableCreateString = new StringBuilder("\"" + Const.CREATE_TABLE + annotatedClass.getSimpleName().toString().toLowerCase() + " (" + "\"+\n");
+        StringBuilder tableCreateString = new StringBuilder()
+                .append("\"")
+                .append(Const.CREATE_TABLE)
+                .append(annotatedClass.getSimpleName().toString().toLowerCase())
+                .append(" (" + "\"+\n");
 
-        for (VariableElement variableElement : ElementFilter.fieldsIn(annotatedClass.getEnclosedElements())) {
+        List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
+        for (int i = 0; i < fieldList.size(); i++) {
+            VariableElement variableElement = fieldList.get(i);
             tableCreateString.append("\"")
                     .append(variableElement.getSimpleName())
-                    .append(Const.TEXT)
-                    .append(Const.COMMA)
-                    .append("\"+\n");
+                    .append(Utils.getFieldType(variableElement, processingEnv));
+            if (i+1 < fieldList.size()) {
+                tableCreateString.append(Const.COMMA);
+            }
+            tableCreateString.append("\"+\n");
         }
         tableCreateString.append("\" );\"");
         FieldSpec tableCreateField = FieldSpec.builder(String.class, Const.CREATE)

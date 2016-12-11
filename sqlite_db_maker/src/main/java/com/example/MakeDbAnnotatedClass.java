@@ -14,7 +14,6 @@ class MakeDbAnnotatedClass {
     private TypeElement annotatedClassElement;
     private String qualifiedSuperClassName;
     private String simpleTypeName;
-    private String id;
 
     public MakeDbAnnotatedClass(TypeElement classElement) throws IllegalArgumentException  {
         this.annotatedClassElement = classElement;
