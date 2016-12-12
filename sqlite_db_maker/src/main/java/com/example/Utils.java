@@ -13,12 +13,12 @@ import javax.tools.Diagnostic;
 
 class Utils {
 
-    static String getFieldType(VariableElement variableElement, ProcessingEnvironment pe) {
+    static String getSQLiteFieldType(VariableElement variableElement, ProcessingEnvironment pe) {
         TypeMirror typeMirror = variableElement.asType();
         if (typeMirror.getKind().isPrimitive()) {
             switch (typeMirror.getKind()) {
                 case BOOLEAN:
-                    return Const.TEXT;
+                    return Const.INTEGER;
                 case BYTE:
                     return Const.INTEGER;
                 case SHORT:
@@ -27,7 +27,7 @@ class Utils {
                     return Const.INTEGER;
                 case CHAR:
                     return Const.INTEGER;
-                case LONG: // TODO: 11.12.2016 check the long in sqlite
+                case LONG:
                     return Const.INTEGER;
                 case FLOAT:
                     return Const.REAL;
@@ -35,26 +35,50 @@ class Utils {
                     return Const.REAL;
                 default:
                     pe.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                            "Field type " + typeMirror.getKind() + " doesn't support ",
+                            "Field type " + typeMirror.getKind() + " doesn't supported ",
                             variableElement);
             }
         } else {
             Element element = pe.getTypeUtils().asElement(typeMirror);
             if (element instanceof TypeElement) {
                 TypeElement typeElement = (TypeElement) element;
-                //pe.getMessager().printMessage(Diagnostic.Kind.NOTE, typeElement.getQualifiedName());
+
                 if (typeElement.getQualifiedName().toString().equals(String.class.getCanonicalName())) {
+                    return Const.TEXT;
+                }else if(typeElement.getQualifiedName().toString().equals(Integer.class.getCanonicalName())){
+                    return Const.INTEGER;
+                }else if(typeElement.getQualifiedName().toString().equals(Byte.class.getCanonicalName())){
+                    return Const.INTEGER;
+                }else if(typeElement.getQualifiedName().toString().equals(Short.class.getCanonicalName())){
+                    return Const.INTEGER;
+                }else if(typeElement.getQualifiedName().toString().equals(Long.class.getCanonicalName())){
+                    return Const.INTEGER;
+                }else if(typeElement.getQualifiedName().toString().equals(Double.class.getCanonicalName())){
+                    return Const.REAL;
+                }else if(typeElement.getQualifiedName().toString().equals(Float.class.getCanonicalName())){
+                    return Const.REAL;
+                }else if(typeElement.getQualifiedName().toString().equals(Boolean.class.getCanonicalName())) {
+                    return Const.INTEGER;
+                }else if(hasParcelableInterface(typeElement, pe)){
                     return Const.TEXT;
                 }else{
                     pe.getMessager().printMessage(Diagnostic.Kind.ERROR,
-                            "Field type " + typeElement.getQualifiedName().toString() + " doesn't support ",
+                            "Field type " + typeElement.getQualifiedName().toString() + " doesn't supported ",
                             variableElement);
                 }
             } else {
-                pe.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field type doesn't support ", variableElement);
+                pe.getMessager().printMessage(Diagnostic.Kind.ERROR, "Field "+ variableElement.getSimpleName()
+                        + " has not supported type ", variableElement);
             }
 
         }
         return Const.TEXT;
+    }
+
+    private static boolean hasParcelableInterface(TypeElement typeElement, ProcessingEnvironment pe) {
+        for (TypeMirror typeMirror : typeElement.getInterfaces()) {
+            if (typeMirror.toString().equals("android.os.Parcelable")) return true;
+        }
+        return false;
     }
 }

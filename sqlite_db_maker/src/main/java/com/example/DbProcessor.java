@@ -3,7 +3,6 @@ package com.example;
 
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.BufferedWriter;
@@ -18,11 +17,11 @@ import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -94,28 +93,25 @@ public class DbProcessor extends AbstractProcessor {
         }
 
         // Check fields: all fields must be public and not final;
-        boolean classHasFields = false;
+        boolean classNotHasFields = true;
         for (VariableElement variableElement : ElementFilter.fieldsIn(classElement.getEnclosedElements())) {
+            if (skipField(variableElement)) {
+                continue;
+            }
             if (variableElement.getModifiers().contains(Modifier.FINAL)) {
-                error("Fields in class can't be final", classElement);
+                error("Field "+variableElement.getSimpleName()+" can't be final", variableElement);
                 return false;
             }
             if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
-                error("Fields in class should be public", classElement);
+                error("Field "+variableElement.getSimpleName()+" should be public", variableElement);
                 return false;
             }
-//            List<? extends AnnotationMirror> fieldAnnotations = variableElement.getAnnotationMirrors();
-//            for (AnnotationMirror fieldAn : fieldAnnotations) {
-//                Map map = fieldAn.getElementValues();
-//                for (  : map.entrySet()) {
-//
-//                }
-//            }
-            classHasFields = true;
+            classNotHasFields = false;
+
         }
 
-        if (!classHasFields) {
-            error("Class must has minimum one field", classElement);
+        if (classNotHasFields) {
+            error("Class must has minimum one valid field", classElement);
             return false;
         }
 
@@ -158,7 +154,7 @@ public class DbProcessor extends AbstractProcessor {
                 .build();
 
         final JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(
-                classPackage+"."+CLASS_NAME);
+                classPackage + "." + CLASS_NAME);
 
         final Writer writer = new BufferedWriter(sourceFile.openWriter());
         javaFile.writeTo(writer);
@@ -182,12 +178,17 @@ public class DbProcessor extends AbstractProcessor {
                 .append(" (" + "\"+\n");
 
         List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
+        int skipedCount = 0;
         for (int i = 0; i < fieldList.size(); i++) {
             VariableElement variableElement = fieldList.get(i);
+            if (skipField(variableElement)){
+                skipedCount += 1;
+                continue;
+            }
             tableCreateString.append("\"")
                     .append(variableElement.getSimpleName())
-                    .append(Utils.getFieldType(variableElement, processingEnv));
-            if (i+1 < fieldList.size()) {
+                    .append(Utils.getSQLiteFieldType(variableElement, processingEnv));
+            if (i + 1 < fieldList.size() - skipedCount) {
                 tableCreateString.append(Const.COMMA);
             }
             tableCreateString.append("\"+\n");
@@ -201,6 +202,17 @@ public class DbProcessor extends AbstractProcessor {
         innerClassBuilder.addField(tableCreateField);
 
         return innerClassBuilder.build();
+    }
+
+    private boolean skipField(VariableElement variableElement) {
+        List<? extends AnnotationMirror> anList = variableElement.getAnnotationMirrors();
+        for (AnnotationMirror annotationMirror : anList) {
+            if (annotationMirror.getAnnotationType().toString().equals(ExcludeField.class.getCanonicalName())) {
+                log("Skip field " + variableElement.getSimpleName());
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

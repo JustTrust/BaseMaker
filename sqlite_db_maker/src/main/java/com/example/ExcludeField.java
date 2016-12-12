@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD) @Retention(RetentionPolicy.SOURCE)
 public @interface ExcludeField {
-    int value();
 }
