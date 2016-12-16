@@ -175,7 +175,7 @@ public class DbProcessor extends AbstractProcessor {
                 .append("\"")
                 .append(Const.CREATE_TABLE)
                 .append(annotatedClass.getSimpleName().toString().toLowerCase())
-                .append(" (" + "\"+\n");
+                .append(" (" + Const.STIRNG_END);
 
         List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
         int skipedCount = 0;
@@ -188,10 +188,10 @@ public class DbProcessor extends AbstractProcessor {
             tableCreateString.append("\"")
                     .append(variableElement.getSimpleName())
                     .append(Utils.getSQLiteFieldType(variableElement, processingEnv));
-            if (i + 1 < fieldList.size() - skipedCount) {
+            if (i + 1 < fieldList.size() - skipedCount - 1) {
                 tableCreateString.append(Const.COMMA);
             }
-            tableCreateString.append("\"+\n");
+            tableCreateString.append(Const.STIRNG_END);
         }
         tableCreateString.append("\" );\"");
         FieldSpec tableCreateField = FieldSpec.builder(String.class, Const.CREATE)

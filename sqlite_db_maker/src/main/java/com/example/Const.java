@@ -16,4 +16,5 @@ public abstract class Const {
 
     public static final String TABLE_NAME = "TABLE_NAME";
     public static final String CREATE = "CREATE";
+    public static final String STIRNG_END = "\"+\n";
 }
