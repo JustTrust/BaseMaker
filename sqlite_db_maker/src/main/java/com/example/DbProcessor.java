@@ -103,11 +103,11 @@ public class DbProcessor extends AbstractProcessor {
                 continue;
             }
             if (variableElement.getModifiers().contains(Modifier.FINAL)) {
-                error("Field "+variableElement.getSimpleName()+" can't be final", variableElement);
+                error("Field " + variableElement.getSimpleName() + " can't be final", variableElement);
                 return false;
             }
             if (!variableElement.getModifiers().contains(Modifier.PUBLIC)) {
-                error("Field "+variableElement.getSimpleName()+" should be public", variableElement);
+                error("Field " + variableElement.getSimpleName() + " should be public", variableElement);
                 return false;
             }
             classNotHasFields = false;
@@ -187,16 +187,29 @@ public class DbProcessor extends AbstractProcessor {
     private MethodSpec getContentValueMethod(final TypeElement annotatedClass) {
         ClassName contentValues = ClassName.get("android.content", "ContentValues");
         log(annotatedClass.getQualifiedName().toString());
-        MethodSpec toContentValue = MethodSpec.methodBuilder("getContentValue")
+        MethodSpec.Builder toContentValue = MethodSpec.methodBuilder("getContentValue")
                 .addModifiers(Modifier.PUBLIC)
                 .returns(contentValues)
                 .addParameter(TypeName.get(annotatedClass.asType())
                         , annotatedClass.getSimpleName().toString().toLowerCase())
-                .addStatement("$T result = new $T()", contentValues, contentValues)
-                .addStatement("return result")
-                .build();
+                .addStatement("$T result = new $T()", contentValues, contentValues);
 
-        return toContentValue;
+        final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
+        int skipedCount = 0;
+        for (int i = 0; i < fieldList.size(); i++) {
+            VariableElement variableElement = fieldList.get(i);
+            if (skipField(variableElement)) {
+                skipedCount += 1;
+                continue;
+            }
+            toContentValue.addStatement("result.put($S, $L.$L)"
+                    , variableElement.getSimpleName().toString()
+                    , annotatedClass.getSimpleName().toString().toLowerCase()
+                    , variableElement.getSimpleName().toString());
+
+        }
+        toContentValue.addStatement("return result");
+        return toContentValue.build();
     }
 
     private FieldSpec getTableCreateField(TypeElement annotatedClass) {
@@ -210,7 +223,7 @@ public class DbProcessor extends AbstractProcessor {
         int skipedCount = 0;
         for (int i = 0; i < fieldList.size(); i++) {
             VariableElement variableElement = fieldList.get(i);
-            if (skipField(variableElement)){
+            if (skipField(variableElement)) {
                 skipedCount += 1;
                 continue;
             }

@@ -59,7 +59,7 @@ class Utils {
                     return Const.REAL;
                 }else if(typeElement.getQualifiedName().toString().equals(Boolean.class.getCanonicalName())) {
                     return Const.INTEGER;
-                }else if(hasParcelableInterface(typeElement, pe)){
+                }else if(hasSerializableInterface(typeElement, pe)){
                     return Const.TEXT;
                 }else{
                     pe.getMessager().printMessage(Diagnostic.Kind.ERROR,
@@ -75,10 +75,12 @@ class Utils {
         return Const.TEXT;
     }
 
-    private static boolean hasParcelableInterface(TypeElement typeElement, ProcessingEnvironment pe) {
+    private static boolean hasSerializableInterface(TypeElement typeElement, ProcessingEnvironment pe) {
         for (TypeMirror typeMirror : typeElement.getInterfaces()) {
-            if (typeMirror.toString().equals("android.os.Parcelable")) return true;
+            if (typeMirror.toString().equals("java.io.Serializable")) return true;
         }
+
         return false;
     }
+
 }
