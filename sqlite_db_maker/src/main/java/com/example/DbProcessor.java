@@ -5,7 +5,6 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -32,9 +31,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
-public class DbProcessor extends AbstractProcessor {
 
-    private static final String CLASS_NAME = "TBL";
+public class DbProcessor extends AbstractProcessor {
 
     private Map<String, MakeDbAnnotatedClass> classList = new LinkedHashMap<>();
 
@@ -141,7 +139,7 @@ public class DbProcessor extends AbstractProcessor {
             log("Annotated classes list is empty");
         }
 
-        TypeSpec.Builder mainClassBuilder = TypeSpec.classBuilder(CLASS_NAME)
+        TypeSpec.Builder mainClassBuilder = TypeSpec.classBuilder(Const.CLASS_NAME)
                 .addModifiers(Modifier.PUBLIC);
 
         String classPackage = "";
@@ -158,7 +156,7 @@ public class DbProcessor extends AbstractProcessor {
                 .build();
 
         final JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(
-                classPackage + "." + CLASS_NAME);
+                classPackage + "." + Const.CLASS_NAME);
 
         final Writer writer = new BufferedWriter(sourceFile.openWriter());
         javaFile.writeTo(writer);
@@ -171,7 +169,7 @@ public class DbProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
                 .initializer("$S", annotatedClass.getSimpleName().toString().toLowerCase())
                 .build();
-        TypeSpec.Builder innerClassBuilder = TypeSpec.classBuilder(annotatedClass.getSimpleName().toString())
+        TypeSpec.Builder innerClassBuilder = TypeSpec.classBuilder(annotatedClass.getSimpleName().toString() + Const.SUFIX)
                 .addModifiers(Modifier.PUBLIC)
                 .addField(tableNameField);
 
@@ -181,25 +179,73 @@ public class DbProcessor extends AbstractProcessor {
         MethodSpec toContentValueMethod = getContentValueMethod(annotatedClass);
         innerClassBuilder.addMethod(toContentValueMethod);
 
+        MethodSpec parseCursorMethod = getParseCursorMethod(annotatedClass);
+        innerClassBuilder.addMethod(parseCursorMethod);
+
         return innerClassBuilder.build();
+    }
+
+//    public static Profile parseCursor(Cursor cursor) {
+//        Profile profile = new Profile();
+//        profile.firstName = cursor.getString(cursor.getColumnIndexOrThrow(Column.FIRST_NAME));
+//        profile.lastName = cursor.getString(cursor.getColumnIndexOrThrow(Column.LAST_NAME));
+//        profile.emailAddress = cursor.getString(cursor.getColumnIndexOrThrow(Column.EMAIL_ADDRESS));
+//        profile.password = cursor.getString(cursor.getColumnIndexOrThrow(Column.PASSWORD));
+//        profile.mobilePhoneNumber = cursor.getString(
+//                cursor.getColumnIndexOrThrow(Column.MOBILE_PHONE_NUMBER));
+//        profile.gender = cursor.getString(cursor.getColumnIndexOrThrow(Column.GENDER));
+//        profile.cardNumber = cursor.getString(cursor.getColumnIndexOrThrow(Column.CARD_NUMBER));
+//        profile.postalCode = cursor.getString(cursor.getColumnIndexOrThrow(Column.POSTAL_CODE));
+//        profile.birthday = cursor.getString(cursor.getColumnIndexOrThrow(Column.BIRTHDAY));
+//        profile.pmaCode = cursor.getString(cursor.getColumnIndexOrThrow(Column.PMA_CODE));
+//
+//        int receiveEmails = cursor.getInt(cursor.getColumnIndexOrThrow(Column.RECEIVE_EMAILS));
+//        profile.receiveEmails = (receiveEmails == 1);
+//        int verifiedNumber = cursor.getInt(cursor.getColumnIndexOrThrow(Column.VERIFIED_NUMBER));
+//        profile.verifiedNumber = (verifiedNumber == 1);
+//        return profile;
+//    }
+
+    private MethodSpec getParseCursorMethod(TypeElement annotatedClass) {
+        ClassName cursorClassName = ClassName.get("android.database", "Cursor");
+
+        MethodSpec.Builder toContentValue = MethodSpec.methodBuilder("getContentValue")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(TypeName.get(annotatedClass.asType()))
+                .addParameter(cursorClassName, "cursor")
+                .addStatement("$1T $2L = new $1T()"
+                        , TypeName.get(annotatedClass.asType())
+                        , annotatedClass.getSimpleName().toString().toLowerCase());
+
+        final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
+        for (int i = 0; i < fieldList.size(); i++) {
+            VariableElement variableElement = fieldList.get(i);
+            if (skipField(variableElement)) {
+                continue;
+            }
+            toContentValue.addStatement("$L.$L = cursor."+Utils.getFieldType(variableElement, processingEnv, true)+"$L.$L)"
+                    , variableElement.getSimpleName().toString()
+                    , annotatedClass.getSimpleName().toString().toLowerCase()
+                    , variableElement.getSimpleName().toString());
+
+        }
+        toContentValue.addStatement("return result");
+        return toContentValue.build();
     }
 
     private MethodSpec getContentValueMethod(final TypeElement annotatedClass) {
         ClassName contentValues = ClassName.get("android.content", "ContentValues");
-        log(annotatedClass.getQualifiedName().toString());
         MethodSpec.Builder toContentValue = MethodSpec.methodBuilder("getContentValue")
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(contentValues)
                 .addParameter(TypeName.get(annotatedClass.asType())
                         , annotatedClass.getSimpleName().toString().toLowerCase())
                 .addStatement("$T result = new $T()", contentValues, contentValues);
 
         final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
-        int skipedCount = 0;
         for (int i = 0; i < fieldList.size(); i++) {
             VariableElement variableElement = fieldList.get(i);
             if (skipField(variableElement)) {
-                skipedCount += 1;
                 continue;
             }
             toContentValue.addStatement("result.put($S, $L.$L)"
@@ -229,7 +275,7 @@ public class DbProcessor extends AbstractProcessor {
             }
             tableCreateString.append(Const.QUOTE)
                     .append(variableElement.getSimpleName())
-                    .append(Utils.getSQLiteFieldType(variableElement, processingEnv));
+                    .append(Utils.getFieldType(variableElement, processingEnv, true));
             if (i + 1 < fieldList.size() - skipedCount - 1) {
                 tableCreateString.append(Const.COMMA);
             }

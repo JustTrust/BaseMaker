@@ -13,26 +13,26 @@ import javax.tools.Diagnostic;
 
 class Utils {
 
-    static String getSQLiteFieldType(VariableElement variableElement, ProcessingEnvironment pe) {
+    static String getFieldType(VariableElement variableElement, ProcessingEnvironment pe, boolean getType) {
         TypeMirror typeMirror = variableElement.asType();
         if (typeMirror.getKind().isPrimitive()) {
             switch (typeMirror.getKind()) {
                 case BOOLEAN:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case BYTE:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case SHORT:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case INT:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case CHAR:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case LONG:
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 case FLOAT:
-                    return Const.REAL;
+                    return getType ? Const.REAL : Const.GET_REAL;
                 case DOUBLE:
-                    return Const.REAL;
+                    return getType ? Const.REAL : Const.GET_REAL;
                 default:
                     pe.getMessager().printMessage(Diagnostic.Kind.ERROR,
                             "Field type " + typeMirror.getKind() + " doesn't supported ",
@@ -46,21 +46,21 @@ class Utils {
                 if (typeElement.getQualifiedName().toString().equals(String.class.getCanonicalName())) {
                     return Const.TEXT;
                 }else if(typeElement.getQualifiedName().toString().equals(Integer.class.getCanonicalName())){
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 }else if(typeElement.getQualifiedName().toString().equals(Byte.class.getCanonicalName())){
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 }else if(typeElement.getQualifiedName().toString().equals(Short.class.getCanonicalName())){
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 }else if(typeElement.getQualifiedName().toString().equals(Long.class.getCanonicalName())){
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 }else if(typeElement.getQualifiedName().toString().equals(Double.class.getCanonicalName())){
-                    return Const.REAL;
+                    return getType ? Const.REAL : Const.GET_REAL;
                 }else if(typeElement.getQualifiedName().toString().equals(Float.class.getCanonicalName())){
-                    return Const.REAL;
+                    return getType ? Const.REAL : Const.GET_REAL;
                 }else if(typeElement.getQualifiedName().toString().equals(Boolean.class.getCanonicalName())) {
-                    return Const.INTEGER;
+                    return getType ? Const.INTEGER : Const.GET_INT;
                 }else if(hasSerializableInterface(typeElement, pe)){
-                    return Const.TEXT;
+                    return getType ? Const.TEXT : Const.GET_TEXT;
                 }else{
                     pe.getMessager().printMessage(Diagnostic.Kind.ERROR,
                             "Field type " + typeElement.getQualifiedName().toString() + " doesn't supported ",
