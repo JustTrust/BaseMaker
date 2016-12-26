@@ -13,12 +13,17 @@ public abstract class Const {
     public static final String TEXT = " TEXT";
     public static final String REAL = " REAL";
     public static final String INTEGER = " INTEGER";
-    public static final String GET_TEXT = "getString";
-    public static final String GET_REAL = "getFloat";
-    public static final String GET_INT = "getInt";
 
+    public static final String GET_TEXT = "getString";
+    public static final String GET_SHORT = "getShort";
+    public static final String GET_INT = "getInt";
+    public static final String GET_LONG = "getLong";
+    public static final String GET_FLOAT = "getFloat";
+    public static final String GET_DOUBLE = "getDouble";
+
+    public static final String _ID = "_id";
     public static final String COMMA = ", ";
-    public static final String PRIMARY_KEY = " PRIMARY KEY ";
+    public static final String PRIMARY_KEY = " PRIMARY KEY";
     public static final String AUTOINCREMENT = " AUTOINCREMENT";
     public static final String DROP_TABLE_IF_EXISTS = "DROP TABLE IF EXISTS ";
 

@@ -170,7 +170,7 @@ public class DbProcessor extends AbstractProcessor {
                 .initializer("$S", annotatedClass.getSimpleName().toString().toLowerCase())
                 .build();
         TypeSpec.Builder innerClassBuilder = TypeSpec.classBuilder(annotatedClass.getSimpleName().toString() + Const.SUFIX)
-                .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addField(tableNameField);
 
         FieldSpec tableCreateField = getTableCreateField(annotatedClass);
@@ -185,37 +185,16 @@ public class DbProcessor extends AbstractProcessor {
         return innerClassBuilder.build();
     }
 
-//    public static Profile parseCursor(Cursor cursor) {
-//        Profile profile = new Profile();
-//        profile.firstName = cursor.getString(cursor.getColumnIndexOrThrow(Column.FIRST_NAME));
-//        profile.lastName = cursor.getString(cursor.getColumnIndexOrThrow(Column.LAST_NAME));
-//        profile.emailAddress = cursor.getString(cursor.getColumnIndexOrThrow(Column.EMAIL_ADDRESS));
-//        profile.password = cursor.getString(cursor.getColumnIndexOrThrow(Column.PASSWORD));
-//        profile.mobilePhoneNumber = cursor.getString(
-//                cursor.getColumnIndexOrThrow(Column.MOBILE_PHONE_NUMBER));
-//        profile.gender = cursor.getString(cursor.getColumnIndexOrThrow(Column.GENDER));
-//        profile.cardNumber = cursor.getString(cursor.getColumnIndexOrThrow(Column.CARD_NUMBER));
-//        profile.postalCode = cursor.getString(cursor.getColumnIndexOrThrow(Column.POSTAL_CODE));
-//        profile.birthday = cursor.getString(cursor.getColumnIndexOrThrow(Column.BIRTHDAY));
-//        profile.pmaCode = cursor.getString(cursor.getColumnIndexOrThrow(Column.PMA_CODE));
-//
-//        int receiveEmails = cursor.getInt(cursor.getColumnIndexOrThrow(Column.RECEIVE_EMAILS));
-//        profile.receiveEmails = (receiveEmails == 1);
-//        int verifiedNumber = cursor.getInt(cursor.getColumnIndexOrThrow(Column.VERIFIED_NUMBER));
-//        profile.verifiedNumber = (verifiedNumber == 1);
-//        return profile;
-//    }
-
     private MethodSpec getParseCursorMethod(TypeElement annotatedClass) {
         ClassName cursorClassName = ClassName.get("android.database", "Cursor");
-
-        MethodSpec.Builder toContentValue = MethodSpec.methodBuilder("getContentValue")
+        String returnVariable = annotatedClass.getSimpleName().toString().toLowerCase();
+        MethodSpec.Builder toContentValue = MethodSpec.methodBuilder("parseCursor")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(TypeName.get(annotatedClass.asType()))
                 .addParameter(cursorClassName, "cursor")
                 .addStatement("$1T $2L = new $1T()"
                         , TypeName.get(annotatedClass.asType())
-                        , annotatedClass.getSimpleName().toString().toLowerCase());
+                        , returnVariable);
 
         final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
         for (int i = 0; i < fieldList.size(); i++) {
@@ -223,13 +202,14 @@ public class DbProcessor extends AbstractProcessor {
             if (skipField(variableElement)) {
                 continue;
             }
-            toContentValue.addStatement("$L.$L = cursor."+Utils.getFieldType(variableElement, processingEnv, true)+"$L.$L)"
-                    , variableElement.getSimpleName().toString()
+            toContentValue.addStatement("$L.$L = cursor.$L(cursor.getColumnIndexOrThrow(\"$L\"))$L"
                     , annotatedClass.getSimpleName().toString().toLowerCase()
-                    , variableElement.getSimpleName().toString());
-
+                    , variableElement.getSimpleName().toString()
+                    , Utils.getFieldType(variableElement, processingEnv, false)
+                    , variableElement.getSimpleName().toString()
+                    , Utils.addBooleanPostfix(variableElement, processingEnv));
         }
-        toContentValue.addStatement("return result");
+        toContentValue.addStatement("return $L", returnVariable);
         return toContentValue.build();
     }
 
@@ -258,12 +238,20 @@ public class DbProcessor extends AbstractProcessor {
         return toContentValue.build();
     }
 
+    //Column._ID + INTEGER + PRIMARY_KEY + AUTOINCREMENT + COMMA +
     private FieldSpec getTableCreateField(TypeElement annotatedClass) {
         StringBuilder tableCreateString = new StringBuilder()
                 .append(Const.QUOTE)
                 .append(Const.CREATE_TABLE)
                 .append(annotatedClass.getSimpleName().toString().toLowerCase())
-                .append(" (" + Const.LINE_END);
+                .append(" (" + Const.LINE_END)
+                .append(Const.QUOTE)
+                .append(Const._ID)
+                .append(Const.INTEGER)
+                .append(Const.PRIMARY_KEY)
+                .append(Const.AUTOINCREMENT)
+                .append(Const.COMMA)
+                .append(Const.LINE_END);
 
         final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
         int skipedCount = 0;

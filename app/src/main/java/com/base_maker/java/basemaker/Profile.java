@@ -13,16 +13,16 @@ public class Profile {
 
     public transient String firstName;
     public String lastName;
-    public String emailAddress;
+    public int emailAddress;
     public String password;
-    public Double mobilePhoneNumber;
+    public double mobilePhoneNumber;
     public Long marketingTokenId;
-    public String gender;
-    public String cardNumber;
-    public String postalCode;
-    public String birthday;
-    public String pmaCode;
-    public String storeName;
+    public short gender;
+    public Short cardNumber;
+    public long postalCode;
+    public Long birthday;
+    public Float pmaCode;
+    public int storeName;
     public boolean receiveEmails;
     public boolean verifiedNumber;
     @ExcludeField
