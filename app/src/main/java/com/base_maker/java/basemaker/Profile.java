@@ -11,12 +11,14 @@ import com.example.MakeDbFromClass;
 @MakeDbFromClass
 public class Profile {
 
+    @ExcludeField
     public transient String firstName;
     public String lastName;
     public int emailAddress;
     public String password;
     public double mobilePhoneNumber;
     public Long marketingTokenId;
+    @ExcludeField
     public short gender;
     public Short cardNumber;
     public long postalCode;
@@ -25,8 +27,6 @@ public class Profile {
     public int storeName;
     public boolean receiveEmails;
     public boolean verifiedNumber;
-    @ExcludeField
-    public ServerError serverError;
 
     public Profile() {
     }

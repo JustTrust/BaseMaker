@@ -238,7 +238,6 @@ public class DbProcessor extends AbstractProcessor {
         return toContentValue.build();
     }
 
-    //Column._ID + INTEGER + PRIMARY_KEY + AUTOINCREMENT + COMMA +
     private FieldSpec getTableCreateField(TypeElement annotatedClass) {
         StringBuilder tableCreateString = new StringBuilder()
                 .append(Const.QUOTE)
@@ -264,11 +263,13 @@ public class DbProcessor extends AbstractProcessor {
             tableCreateString.append(Const.QUOTE)
                     .append(variableElement.getSimpleName())
                     .append(Utils.getFieldType(variableElement, processingEnv, true));
-            if (i + 1 < fieldList.size() - skipedCount - 1) {
+            log("skipedCount - "+(i+1) +" < "+(fieldList.size()));
+            if (i + 1 < fieldList.size()) {
                 tableCreateString.append(Const.COMMA);
             }
             tableCreateString.append(Const.LINE_END);
         }
+
         tableCreateString.append(Const.STRING_END);
         return FieldSpec.builder(String.class, Const.CREATE)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
