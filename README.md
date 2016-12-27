@@ -1,12 +1,11 @@
 # SQLite table maker library
-=============
 An annotation based library. It generate a table description for SQLite from a class fields.
 This library will save you from writing a boring, monotone code.
 You just need annotate your pojo class with @TableFromClass.
 If you want to exclude some fields just annotate it with @ExcludeField annotation.
 
 ###### Sample of using
-
+```
 @TableFromClass
 public class ServerError{
 
@@ -19,9 +18,9 @@ public class ServerError{
     public ServerError(){
     }
 }
-
+```
 Will give this result
-
+```
 public class TBL {
 public static class ServerError$Table {
     public static final String TABLE_NAME = "servererror";
@@ -58,4 +57,4 @@ public static class ServerError$Table {
     }
   }
 }
-
+```
