@@ -4,8 +4,8 @@ This library will save you from writing a boring, monotone code.
 You just need annotate your pojo class with @TableFromClass.
 If you want to exclude some fields just annotate it with @ExcludeField annotation.
 
-###### Sample of using
-```
+###### Annotated class
+```java
 @TableFromClass
 public class ServerError{
 
@@ -19,8 +19,8 @@ public class ServerError{
     }
 }
 ```
-Will give this result
-```
+###### Resulting generated class
+```java
 public class TBL {
 public static class ServerError$Table {
     public static final String TABLE_NAME = "servererror";
@@ -57,4 +57,13 @@ public static class ServerError$Table {
     }
   }
 }
+```
+###### Example of using
+```java
+db.execSQL(TBL.ServerError$Table.CREATE)
+
+db.createQuery(TBL.ServerError$Table.TABLE_NAME,
+                "SELECT * FROM " + TBL.ServerError$Table.TABLE_NAME)
+                
+return TBL.ServerError$Table.parseCursor(cursor);                
 ```
