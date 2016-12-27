@@ -1,4 +1,4 @@
-package com.example;
+package com.abelichenko;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
  */
 
 @Target(ElementType.TYPE) @Retention(RetentionPolicy.SOURCE)
-public @interface MakeDbFromClass {
+public @interface TableFromClass {
 
 }

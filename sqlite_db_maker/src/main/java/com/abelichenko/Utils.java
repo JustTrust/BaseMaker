@@ -1,4 +1,4 @@
-package com.example;
+package com.abelichenko;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;

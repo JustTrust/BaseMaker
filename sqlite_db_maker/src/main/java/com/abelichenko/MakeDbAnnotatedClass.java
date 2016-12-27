@@ -1,4 +1,4 @@
-package com.example;
+package com.abelichenko;
 
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
@@ -17,7 +17,7 @@ class MakeDbAnnotatedClass {
 
     public MakeDbAnnotatedClass(TypeElement classElement) throws IllegalArgumentException  {
         this.annotatedClassElement = classElement;
-        MakeDbFromClass annotation = classElement.getAnnotation(MakeDbFromClass.class);
+        TableFromClass annotation = classElement.getAnnotation(TableFromClass.class);
 
         // Get the full QualifiedTypeName
         try {

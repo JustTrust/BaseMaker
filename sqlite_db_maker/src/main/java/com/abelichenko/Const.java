@@ -1,4 +1,4 @@
-package com.example;
+package com.abelichenko;
 
 /**
  * Created by Admin on 10.12.2016.
@@ -30,6 +30,7 @@ public abstract class Const {
     public static final String TABLE_NAME = "TABLE_NAME";
     public static final String CREATE = "CREATE";
     public static final String LINE_END = "\"+\n";
-    public static final String STRING_END = "\" );\"";
+    public static final String STRING_END = "\");\"";
     public static final String QUOTE = "\"";
+    public static final String COLUMN_CLASS_NAME = "Column";
 }

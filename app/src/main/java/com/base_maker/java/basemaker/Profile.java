@@ -1,17 +1,17 @@
 package com.base_maker.java.basemaker;
 
-import com.example.ExcludeField;
-import com.example.MakeDbFromClass;
+import com.abelichenko.ExcludeField;
+import com.abelichenko.TableFromClass;
 
 /**
  * Created by Belichenko Anton on 08.12.16.
  * mailto: a.belichenko@gmail.com
  */
 
-@MakeDbFromClass
+@TableFromClass
 public class Profile {
 
-    @ExcludeField
+    //@ExcludeField
     public transient String firstName;
     public String lastName;
     public int emailAddress;
@@ -26,6 +26,7 @@ public class Profile {
     public Float pmaCode;
     public int storeName;
     public boolean receiveEmails;
+    //@ExcludeField
     public boolean verifiedNumber;
 
     public Profile() {

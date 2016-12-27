@@ -1,4 +1,4 @@
-package com.example;
+package com.abelichenko;
 
 
 import com.squareup.javapoet.ClassName;
@@ -39,14 +39,14 @@ public class DbProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
 
-        if (roundEnvironment.getElementsAnnotatedWith(MakeDbFromClass.class).isEmpty()) {
-            log("Don't have any @MakeDbFromClass annotation");
+        if (roundEnvironment.getElementsAnnotatedWith(TableFromClass.class).isEmpty()) {
+            log("Don't have any @TableFromClass annotation");
             return false;
         }
 
-        log("Has annotated classes " + String.valueOf(roundEnvironment.getElementsAnnotatedWith(MakeDbFromClass.class).size()));
-        // Iterate over all @MakeDbFromClass annotated elements
-        for (Element annotatedElement : roundEnvironment.getElementsAnnotatedWith(MakeDbFromClass.class)) {
+        log("Has annotated classes " + String.valueOf(roundEnvironment.getElementsAnnotatedWith(TableFromClass.class).size()));
+        // Iterate over all @TableFromClass annotated elements
+        for (Element annotatedElement : roundEnvironment.getElementsAnnotatedWith(TableFromClass.class)) {
             // Check if a class valid
             if (isValidClass(annotatedElement)) {
                 if (classList.get(annotatedElement.getSimpleName().toString()) == null) {
@@ -76,7 +76,7 @@ public class DbProcessor extends AbstractProcessor {
     private boolean isValidClass(Element item) {
 
         if (item.getKind() != ElementKind.CLASS) {
-            fatalError("Only classes can be annotated with @MakeDbFromClass");
+            fatalError("Only classes can be annotated with @TableFromClass");
             return false; // Exit processing
         }
 
@@ -90,7 +90,7 @@ public class DbProcessor extends AbstractProcessor {
 
         // Check if it's an abstract class
         if (classElement.getModifiers().contains(Modifier.ABSTRACT)) {
-            error("The class is abstract. You can't annotate abstract classes @MakeDbFromClass", classElement);
+            error("The class is abstract. You can't annotate abstract classes @TableFromClass", classElement);
             return false;
         }
 
@@ -173,6 +173,9 @@ public class DbProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addField(tableNameField);
 
+        TypeSpec columnClass = getColumnClass(annotatedClass);
+        innerClassBuilder.addType(columnClass);
+
         FieldSpec tableCreateField = getTableCreateField(annotatedClass);
         innerClassBuilder.addField(tableCreateField);
 
@@ -183,6 +186,27 @@ public class DbProcessor extends AbstractProcessor {
         innerClassBuilder.addMethod(parseCursorMethod);
 
         return innerClassBuilder.build();
+    }
+
+
+    private TypeSpec getColumnClass(TypeElement annotatedClass) {
+        TypeSpec.Builder columnClass = TypeSpec.classBuilder(Const.COLUMN_CLASS_NAME)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.STATIC);
+
+        final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
+        for (int i = 0; i < fieldList.size(); i++) {
+            VariableElement variableElement = fieldList.get(i);
+            if (skipField(variableElement)) {
+                continue;
+            }
+            FieldSpec columnField = FieldSpec.builder(String.class, variableElement.getSimpleName().toString().toUpperCase())
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                    .initializer("$S", variableElement.getSimpleName().toString())
+                    .build();
+            columnClass.addField(columnField);
+        }
+
+        return columnClass.build();
     }
 
     private MethodSpec getParseCursorMethod(TypeElement annotatedClass) {
@@ -253,23 +277,18 @@ public class DbProcessor extends AbstractProcessor {
                 .append(Const.LINE_END);
 
         final List<VariableElement> fieldList = ElementFilter.fieldsIn(annotatedClass.getEnclosedElements());
-        int skipedCount = 0;
         for (int i = 0; i < fieldList.size(); i++) {
             VariableElement variableElement = fieldList.get(i);
             if (skipField(variableElement)) {
-                skipedCount += 1;
                 continue;
             }
             tableCreateString.append(Const.QUOTE)
                     .append(variableElement.getSimpleName())
                     .append(Utils.getFieldType(variableElement, processingEnv, true));
-            log("skipedCount - "+(i+1) +" < "+(fieldList.size()));
-            if (i + 1 < fieldList.size()) {
-                tableCreateString.append(Const.COMMA);
-            }
+            tableCreateString.append(Const.COMMA);
             tableCreateString.append(Const.LINE_END);
         }
-
+        tableCreateString.deleteCharAt(tableCreateString.length()-5);
         tableCreateString.append(Const.STRING_END);
         return FieldSpec.builder(String.class, Const.CREATE)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
@@ -291,7 +310,7 @@ public class DbProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         LinkedHashSet<String> annotationSet = new LinkedHashSet<>();
-        annotationSet.add(MakeDbFromClass.class.getCanonicalName());
+        annotationSet.add(TableFromClass.class.getCanonicalName());
         annotationSet.add(ExcludeField.class.getCanonicalName());
         return annotationSet;
     }

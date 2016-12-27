@@ -1,6 +1,7 @@
 package com.base_maker.java.basemaker;
 
-import com.example.MakeDbFromClass;
+import com.abelichenko.ExcludeField;
+import com.abelichenko.TableFromClass;
 
 import java.io.Serializable;
 
@@ -9,12 +10,14 @@ import java.io.Serializable;
  * mailto: a.belichenko@gmail.com
  */
 
-@MakeDbFromClass
+@TableFromClass
 public class ServerError implements Serializable{
 
     public String title;
+    @ExcludeField
     public String message;
     public int type;
+    public boolean internal;
 
     public ServerError(){
 
