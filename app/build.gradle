@@ -26,6 +26,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:24.2.1'
-    compile project(':sqlite_db_maker')
+    compile project(':sqlite_table_maker')
     compile 'com.google.code.gson:gson:2.8.0'
 }
