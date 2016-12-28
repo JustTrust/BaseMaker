@@ -4,33 +4,33 @@ package com.abelichenko;
  * Created by Admin on 10.12.2016.
  */
 
-public abstract class Const {
+abstract class Const {
 
-    public static final String CLASS_NAME = "TBL";
-    public static final String SUFIX = "$Table";
+    static final String CLASS_NAME = "TBL";
+    static final String SUFIX = "$Table";
 
-    public static final String CREATE_TABLE = "CREATE TABLE ";
-    public static final String TEXT = " TEXT";
-    public static final String REAL = " REAL";
-    public static final String INTEGER = " INTEGER";
+    static final String CREATE_TABLE = "CREATE TABLE ";
+    static final String TEXT = " TEXT";
+    static final String REAL = " REAL";
+    static final String INTEGER = " INTEGER";
 
-    public static final String GET_TEXT = "getString";
-    public static final String GET_SHORT = "getShort";
-    public static final String GET_INT = "getInt";
-    public static final String GET_LONG = "getLong";
-    public static final String GET_FLOAT = "getFloat";
-    public static final String GET_DOUBLE = "getDouble";
+    static final String GET_TEXT = "getString";
+    static final String GET_SHORT = "getShort";
+    static final String GET_INT = "getInt";
+    static final String GET_LONG = "getLong";
+    static final String GET_FLOAT = "getFloat";
+    static final String GET_DOUBLE = "getDouble";
 
-    public static final String _ID = "_id";
-    public static final String COMMA = ", ";
-    public static final String PRIMARY_KEY = " PRIMARY KEY";
-    public static final String AUTOINCREMENT = " AUTOINCREMENT";
-    public static final String DROP_TABLE_IF_EXISTS = "DROP TABLE IF EXISTS ";
+    static final String _ID = "_id";
+    static final String COMMA = ", ";
+    static final String PRIMARY_KEY = " PRIMARY KEY";
+    static final String AUTOINCREMENT = " AUTOINCREMENT";
+    static final String DROP_TABLE_IF_EXISTS = "DROP TABLE IF EXISTS ";
 
-    public static final String TABLE_NAME = "TABLE_NAME";
-    public static final String CREATE = "CREATE";
-    public static final String LINE_END = "\"+\n";
-    public static final String STRING_END = "\");\"";
-    public static final String QUOTE = "\"";
-    public static final String COLUMN_CLASS_NAME = "Column";
+    static final String TABLE_NAME = "TABLE_NAME";
+    static final String CREATE = "CREATE";
+    static final String LINE_END = "\"+\n";
+    static final String STRING_END = "\");\"";
+    static final String QUOTE = "\"";
+    static final String COLUMN_CLASS_NAME = "Column";
 }

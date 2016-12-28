@@ -1,4 +1,16 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+
+group='com.github.JustTrust'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

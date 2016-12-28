@@ -83,7 +83,7 @@ class Utils {
         return false;
     }
 
-    public static String addBooleanPostfix(VariableElement variableElement, ProcessingEnvironment pe) {
+    static String addBooleanPostfix(VariableElement variableElement, ProcessingEnvironment pe) {
         String result = "";
         TypeMirror typeMirror = variableElement.asType();
         if (typeMirror.getKind().isPrimitive()) {
